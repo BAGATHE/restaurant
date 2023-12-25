@@ -1,0 +1,123 @@
+                                                     GESTION INTERNE RESTAURANT COTÉ REVENU
+objetcif
+ on traite les donner 
+ on peut voir a l'instant t entre deux date  le chiffre d'affaire du restaurant==> chiffre affaire = (somme (prixnormalproduit * quantiteconsomme))  - somme (prixrevenuproduit * quantiteconsomme) - revenuintermediaire 
+ on peut voir benefice ou perte  historique sur une date donne ou a l'instant t 
+ on peut voir les revenu entrée par les intermediaire individuellement consultation historique mensuelle(affichage quota max et quotta min et quota atteint);
+
+a note a propos de l'intermediaire
+    au moment de payement si l'intermediaire est ratachee a une facture il cumule sont  quota 
+    si sont quota est inferieur au quotamin il ne persoit pas de comission
+    si sont quota est supperieur de quotamax on prend en compte de la somme cummule jusqua sont atteinte au meme somme que quotamax
+    commission de  intermediaire = quantite * prixproduitnormal - quantite*prixproduitintermediaire;
+
+
+note a propos de l'insertion 
+  au moment de valider la facture on choisi si le payement est avec ou sans intermediaire
+  si il est ratache a un intermediaire on insert le cin du intermediaire et et on enregistre tout dans la base tout ce qui est important a propos de la commande et tout le reste 
+
+  apres avoir valide
+  cote serveur on fait tout les insertion dans la table commande,facturation et consommation celon les donner receulli si il y a un demarcheur on insert son id sinon la colonne iddemarcheur sera null dans les table 
+
+
+fonctionnalité supplementaire
+  on affiche le plat le plus vendu a l'intant t ou mensuel;
+  le plat qui nous apporte plus de benefice en terme de ration prixrevient et prix de vente
+  categorie qui rapport plus d'argent
+
+
+
+technologie utilisé:java(jsp),ajax,js,postgres
+--->BASE<---
+   -table categorie(idcategorie,nom)->entre,plat,dessert,boisson
+   -table menu(idmenu,nom,prixnormal,prixintermediaire,prixrevenu,idcategorie);
+   -table client(idclient);
+   -table demarcheurrestaurant(iddemarcheur,cin,nom,quotamax,quotamin)
+   -table commande(idcommande,idmenu,prixnormal,prixdemarcheur,prixderevient,quantite,date,iddemarcheur,idclient);
+   -table facturation (idfacturation,date,montanttotal,iddemarcheur,idclient);
+
+
+   
+-COTÉ BACK-END
+ etape1 => gestion insertion donner facture(dans la table)
+ etape2 => 
+
+
+-COTÉ FRONT-END
+etape1 => -bouton => traiter une facture
+          -afficher les liste menu avec rubrique quantite - et +
+          -choisir les comande 
+          -choisir client normal et client avec intermediaire
+          -bouton valider
+etape2 =>
+navigation -voir chiffre d'affaire(total produi vendu),charge(total depense -> quantiteproduit * prix de revenu,->argnet intermedeiaire),benefice(chiffre affaire - charge),  du mois ou entre deux date   
+           -afficher(statistique) les commission de l'intermediaire
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+index.js
+  -affichage
+     -navigation a gauche 
+
+
+     -interface principale a droite
+         bouton => traiter une facture
+         -afficher les liste menu avec rubrique quantite - et +
+         -choisir les comande 
+         -choisir client normal et client avec intermediaire
+         -bouton valider   
+
+  -metier
+     base->
+
+     
+     fonction->
+
+  integration
+
+
+  
+
+
+
+fichier commande.jsp
+  - je convertie la chaine de reponse en tabeau object
+  -je verifie la premiere indice du table 
+      si le choix == 0  payement sans intermediaire
+         on effectue plusieur operation
+           on insert un client   //check
+           -on recupere l'id client qui vient d'etre inserer c a dire le dernier //check  
+           on insert dans database facture  (idfacture,idclient,idintermediaire,datefacture,montant) mettre le montant a zero et intermediaire null
+           je recupere l'idfacture,idclient, et je l'utilise pour l'insertion de tout les commande 
+           -on insert dans la database commande  en boucle () mettre intermediaire vide
+           on fait un update de la table facture avec la somme des commandeconsommée  
+           on retourne success si sans erreur
+
+      si le choix == 1
+
+      on verifie l'email et le mot de passe de l'intermediaire dans la base 
+        si il est pas repertorié  on return une erreur 
+        sinon on execute la meme etape de payement que celle du payement sans client 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+dashbord.jsp
+   -choisir mois ajouter un ecouteur d'evenement change pour prendre la value 
+   -envoyer le value dans cote serveur a l'aide ajax  method get ajax 
+   -cote serveur on fait requette on prend les  commande du mois mois public List<commande> getcommandeByMonth(month);  
+   -je convertie en Json object et je renvoie au cote client 
+   -cote client on affiche  une tableau de commande
